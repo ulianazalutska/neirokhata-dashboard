@@ -174,10 +174,11 @@ function viewTg(v){
   v.appendChild(q)}
 function viewRuns(v){v.appendChild(runsTable(S.runsTh,"Threads"));var s=el("div");s.style.height="14px";v.appendChild(s);v.appendChild(runsTable(S.runsTg,"Telegram"))}
 function viewIg(v){
-  var c=el("div","card");c.appendChild(el("h2","","Instagram · монтаж Reels"));
-  c.appendChild(el("div","sub","Розділ у розробці. Тут зʼявиться монтаж відео для Instagram."));
-  var u=el("ul","list");["Завантажити відео або обрати з бібліотеки","Автоматичні субтитри: шрифт, колір, анімація","Звукові ефекти, музика й гучність","Перегляд результату та експорт у Reels"].forEach(function(x){var li=el("li","dim",x);u.appendChild(li)});
-  c.appendChild(u);var r=el("div","row");r.appendChild(btn("Скоро","",function(){},true));c.appendChild(r);v.appendChild(c)}
+  var STUDIO="https://ulianazalutska.github.io/neirokhata-reels/";
+  var c=el("div","card");c.appendChild(el("h2","","Instagram · студія рілсів"));
+  c.appendChild(el("div","sub","Перегляд рілса й налаштування: кольори, плями на фоні, розмір підписів, звук і пози Нейрика по сценах. Зміни видно одразу. Монтаж у mp4 звідси буде на наступному етапі, публікуєш сама."));
+  var r=el("div","row");var a=el("a","btn","Відкрити в новій вкладці");a.href=STUDIO;a.target="_blank";a.rel="noopener";a.style.textDecoration="none";r.appendChild(a);c.appendChild(r);v.appendChild(c);
+  var f=document.createElement("iframe");f.src=STUDIO;f.title="Студія рілсів";f.loading="lazy";f.style.cssText="width:100%;height:1050px;border:0;margin-top:14px;border-radius:6px 18px 6px 18px;background:var(--bg)";v.appendChild(f)}
 function viewSet(v){
   var c=el("div","card");c.appendChild(el("h2","","Доступ до GitHub"));
   c.appendChild(el("p","sub","Вставте токен GitHub (fine-grained) з доступом до репозиторіїв neirokhata і neirokhata-threads: Contents — Read, Actions — Read and write. Токен зберігається лише в цьому браузері й нікуди не надсилається, крім api.github.com."));
