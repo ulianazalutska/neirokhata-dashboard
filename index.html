@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Нейрохата · пульт керування</title>
+<style>
+/* Тихий редакційний пульт: нейтральний фон із синюватим відтінком, один акцент-індиго. */
+:root{--bg:#f4f5f8;--card:#fff;--ink:#14161c;--mute:#667085;--line:#e3e6ee;--acc:#4338ca;--acc-ink:#fff;--ok:#127a46;--okbg:#e2f5ea;--warn:#a15c07;--warnbg:#fdf0d9;--bad:#b42318;--badbg:#fde4e1;--run:#1d5fd1;--runbg:#e2ecfc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1016;--card:#171a23;--ink:#eceef4;--mute:#98a1b3;--line:#272b38;--acc:#8b8dfc;--acc-ink:#0e1016;--ok:#58d38c;--okbg:#10301f;--warn:#f0b35a;--warnbg:#382a10;--bad:#ff8a7e;--badbg:#3a1714;--run:#7fb0ff;--runbg:#14284a}}
+:root[data-theme="dark"]{--bg:#0e1016;--card:#171a23;--ink:#eceef4;--mute:#98a1b3;--line:#272b38;--acc:#8b8dfc;--acc-ink:#0e1016;--ok:#58d38c;--okbg:#10301f;--warn:#f0b35a;--warnbg:#382a10;--bad:#ff8a7e;--badbg:#3a1714;--run:#7fb0ff;--runbg:#14284a}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Onest","Segoe UI",system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:16px;margin:0 0 10px}
+.sp{flex:1}
+.sub{color:var(--mute);font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:18px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mute);padding:10px 12px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-color:var(--acc);font-weight:600}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tile .n{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1.1}
+.tile .l{color:var(--mute);font-size:13px;margin-top:4px}
+.two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:14px}
+.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 14px;cursor:pointer}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pill{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.ok{background:var(--okbg);color:var(--ok)}.bad{background:var(--badbg);color:var(--bad)}.run{background:var(--runbg);color:var(--run)}.warn{background:var(--warnbg);color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mute);font-weight:500;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+a{color:var(--acc)}
+ul.list{list-style:none;margin:0;padding:0}
+ul.list li{padding:9px 0;border-bottom:1px solid var(--line)}
+ul.list li:last-child{border-bottom:0}
+.bars{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:8px}
+.bars div{flex:1;background:var(--acc);border-radius:5px 5px 0 0;min-height:3px;position:relative}
+.bars span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:12px;color:var(--mute)}
+.bl{display:flex;gap:8px;font-size:12px;color:var(--mute)}.bl div{flex:1;text-align:center}
+input[type=password],input[type=text]{width:100%;font:inherit;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.msg{margin-top:12px;padding:10px 12px;border-radius:9px;font-size:14px}
+.empty{color:var(--mute);padding:8px 0}
+.dim{opacity:.55}
+.modal{position:fixed;inset:0;background:rgba(10,12,20,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal.on{display:flex}
+.modal .card{max-width:420px;width:100%}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Нейрохата · пульт</h1>
+  <span class="sub" id="upd">Не підключено</span>
+  <span class="sp"></span>
+  <button class="btn" id="refresh">Оновити</button>
+</header>
+<nav role="tablist" id="tabs"></nav>
+<main id="view"></main>
+</div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <div class="card"><h2 id="mt"></h2><p id="mb" class="sub"></p>
+    <div class="row"><button class="btn pri" id="mok">Так, запустити</button><button class="btn" id="mno">Скасувати</button></div></div>
+</div>
+<script>
+(function(){
+var OWNER="ulianazalutska", TG_REPO="neirokhata", TH_REPO="neirokhata-threads", CH="neirokhata";
+var TABS=[["home","Огляд"],["threads","Threads"],["tg","Telegram"],["runs","Запуски"],["ig","Instagram"],["set","Налаштування"]];
+var S={tab:"home",tg:null,th:null,runsTg:[],runsTh:[],err:null,loading:false,at:null,msg:null};
+var $=function(id){return document.getElementById(id)};
+function tok(){try{return localStorage.getItem("nh_token")||""}catch(e){return ""}}
+function setTok(v){try{if(v)localStorage.setItem("nh_token",v);else localStorage.removeItem("nh_token")}catch(e){}}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function api(path,opt){opt=opt||{};var h={"Authorization":"Bearer "+tok(),"Accept":opt.raw?"application/vnd.github.raw+json":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
+  return fetch("https://api.github.com"+path,{method:opt.method||"GET",headers:h,body:opt.body}).then(function(r){
+    if(r.status===204)return null;
+    if(!r.ok)throw new Error(r.status===401?"Токен не підходить або втратив чинність":r.status===404?"Немає доступу до "+path.split("/")[3]+" (перевір права токена)":"GitHub відповів "+r.status);
+    return opt.raw?r.json():r.json()})}
+function fmt(s){if(!s)return"—";var d=new Date(s);return d.toLocaleString("uk-UA",{timeZone:"Europe/Kyiv",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+function load(){
+  if(!tok()){S.err=null;render();return Promise.resolve()}
+  S.loading=true;render();
+  var base="/repos/"+OWNER+"/";
+  return Promise.all([
+    api(base+TG_REPO+"/contents/state/state.json",{raw:1}).catch(function(e){S.err=e.message;return null}),
+    api(base+TH_REPO+"/contents/threads_state.json",{raw:1}).catch(function(e){S.err=e.message;return null}),
+    api(base+TG_REPO+"/actions/runs?per_page=12").catch(function(e){S.err=e.message;return {workflow_runs:[]}}),
+    api(base+TH_REPO+"/actions/runs?per_page=12").catch(function(e){S.err=e.message;return {workflow_runs:[]}})
+  ]).then(function(r){S.tg=r[0];S.th=r[1];S.runsTg=r[2].workflow_runs||[];S.runsTh=r[3].workflow_runs||[];if(!S.err||(r[0]||r[1]))S.at=new Date();S.loading=false;render()})}
+function dispatch(repo,wf,inputs,label){
+  return api("/repos/"+OWNER+"/"+repo+"/actions/workflows/"+wf+"/dispatches",{method:"POST",body:JSON.stringify({ref:"main",inputs:inputs})}).then(function(){
+    S.msg={ok:1,t:label+": запуск створено. За хвилину він зʼявиться у вкладці «Запуски»."};render();setTimeout(load,6000)
+  }).catch(function(e){S.msg={ok:0,t:label+": не вийшло. "+e.message+(/403|404/.test(e.message)?" Токену потрібне право Actions: Read and write.":"")};render()})}
+function ask(title,body,fn){$("mt").textContent=title;$("mb").textContent=body;$("modal").classList.add("on");$("mok").onclick=function(){$("modal").classList.remove("on");fn()};$("mno").onclick=function(){$("modal").classList.remove("on")};$("mok").focus()}
+function pill(r){var c,t;if(r.status!=="completed"){c="run";t=r.status==="queued"?"у черзі":"працює"}else if(r.conclusion==="success"){c="ok";t="успішно"}else if(r.conclusion==="skipped"||r.conclusion==="cancelled"){c="warn";t=r.conclusion==="skipped"?"пропущено":"скасовано"}else{c="bad";t="помилка"}return el("span","pill "+c,t)}
+function tile(n,l){var c=el("div","card tile");c.appendChild(el("div","n",n));c.appendChild(el("div","l",l));return c}
+function btn(t,cls,fn,dis){var b=el("button","btn "+(cls||""),t);b.disabled=!!dis;b.addEventListener("click",fn);return b}
+function today(){return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Kyiv"})}
+function daily(){var d=(S.tg&&S.tg.daily)||{};return Object.keys(d).sort().map(function(k){return[k,d[k]]})}
+function pubToday(){var d=(S.tg&&S.tg.daily||{})[today()];return d?(d.published||[]).length:0}
+function subs(){var s=(S.tg&&S.tg.subs)||{},k=Object.keys(s).sort();return k.length?[s[k[k.length-1]],k.length>1?s[k[k.length-1]]-s[k[0]]:0]:[null,0]}
+function lastRun(rs){return rs[0]}
+function runCard(t,rs){var c=el("div","card");c.appendChild(el("h2","",t));var r=lastRun(rs);if(!r){c.appendChild(el("div","empty","Запусків ще нема"));return c}
+  var p=el("div");p.appendChild(pill(r));p.appendChild(el("span","sub"," "+fmt(r.created_at)));c.appendChild(p);return c}
+function runsTable(rs,name){var c=el("div","card");c.appendChild(el("h2","",name));if(!rs.length){c.appendChild(el("div","empty","Запусків ще нема"));return c}
+  var w=el("div","scroll"),t=el("table"),h=el("tr");["Статус","Подія","Початок","Тривалість",""].forEach(function(x){h.appendChild(el("th","",x))});t.appendChild(h);
+  rs.forEach(function(r){var tr=el("tr"),td=el("td");td.appendChild(pill(r));tr.appendChild(td);
+    tr.appendChild(el("td","",r.event==="schedule"?"за розкладом":r.event==="workflow_dispatch"?"вручну / cron":r.event));
+    tr.appendChild(el("td","",fmt(r.created_at)));
+    var sec=r.updated_at&&r.status==="completed"?Math.max(0,Math.round((new Date(r.updated_at)-new Date(r.run_started_at||r.created_at))/1000)):null;
+    tr.appendChild(el("td","",sec==null?"—":sec+" с"));
+    var l=el("td"),a=el("a","","журнал");a.href=r.html_url;a.target="_blank";a.rel="noopener";l.appendChild(a);tr.appendChild(l);t.appendChild(tr)});
+  w.appendChild(t);c.appendChild(w);return c}
+function msgBox(){if(!S.msg)return null;return el("div","msg "+(S.msg.ok?"ok":"bad"),S.msg.t)}
+function thBtns(){var r=el("div","row");
+  r.appendChild(btn("Опублікувати наступний зараз","pri",function(){ask("Опублікувати в Threads?","Бот візьме наступний пост із Telegram-каналу, перепише і опублікує на @neirokhata. Скасувати після запуску не вийде.",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"false"},"Threads")})}));
+  r.appendChild(btn("Показати тизери без публікації","",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"true"},"Threads (перевірка)")}));return r}
+function tgBtns(){var r=el("div","row");
+  r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину, ігноруючи паузу між постами, і опублікує її в каналі.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true"},"Telegram")})}));
+  r.appendChild(btn("Перевірка без публікації","",function(){dispatch(TG_REPO,"autopost.yml",{dry_run:"true",ignore_gap:"true"},"Telegram (перевірка)")}));
+  r.appendChild(btn("Надіслати звіт","",function(){dispatch(TG_REPO,"autopost.yml",{report:"true"},"Звіт")}));return r}
+function viewHome(v){
+  var g=el("div","grid"),sb=subs();
+  g.appendChild(tile(String(pubToday()),"постів у Telegram сьогодні"));
+  g.appendChild(tile(sb[0]==null?"—":String(sb[0]),"підписників каналу"+(sb[1]?" ("+(sb[1]>0?"+":"")+sb[1]+" за період)":"")));
+  g.appendChild(tile(S.th?String((S.th.published||[]).length):"—","постів у Threads"));
+  g.appendChild(tile(S.tg?String(Object.keys(S.tg.pending||{}).filter(function(k){return S.tg.pending[k].status==="pending"}).length):"—","чернеток чекає"));
+  v.appendChild(g);
+  var t=el("div","two");
+  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Пости йдуть за розкладом 9:17, 14:17 і 19:17 (cron-job.org)."));c1.appendChild(thBtns());t.appendChild(c1);
+  var c2=el("div","card");c2.appendChild(el("h2","","Telegram"));c2.appendChild(el("div","sub","Бот працює щоразу, коли спрацьовує розклад. Тут можна не чекати."));c2.appendChild(tgBtns());t.appendChild(c2);
+  t.appendChild(runCard("Останній запуск Threads",S.runsTh));t.appendChild(runCard("Останній запуск Telegram",S.runsTg));
+  v.appendChild(t);var m=msgBox();if(m)v.appendChild(m)}
+function viewThreads(v){
+  var c=el("div","card");c.appendChild(el("h2","","Керування"));
+  c.appendChild(el("div","sub","Наступні пости за розкладом: 9:17, 14:17, 19:17 за Варшавою. Тизер пише ШІ, а під постом іде відповідь «Детальніше в тг»."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  var l=el("div","card");l.style.marginTop="14px";l.appendChild(el("h2","","Опубліковано"));
+  var p=S.th&&S.th.published||[];
+  if(S.th)l.appendChild(el("div","sub","Оброблено пости Telegram до №"+S.th.last_id));
+  if(!p.length)l.appendChild(el("div","empty","Поки нічого. Перший пост зʼявиться тут після публікації."));
+  else{var u=el("ul","list");p.slice().reverse().forEach(function(e){var li=el("li");
+    var a=el("a","","Пост №"+e.tg+" у Telegram");a.href="https://t.me/"+CH+"/"+e.tg;a.target="_blank";a.rel="noopener";li.appendChild(a);
+    if(e.at)li.appendChild(el("span","sub"," · "+fmt(e.at)));
+    if(e.text)li.appendChild(el("div","",e.text));u.appendChild(li)});l.appendChild(u)}
+  v.appendChild(l)}
+function viewTg(v){
+  var c=el("div","card");c.appendChild(el("h2","","Керування"));c.appendChild(tgBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  var d=daily().slice(-7),mx=Math.max.apply(null,d.map(function(x){return(x[1].published||[]).length}).concat([1]));
+  var a=el("div","card");a.style.marginTop="14px";a.appendChild(el("h2","","Пости за днями"));
+  if(!d.length)a.appendChild(el("div","empty","Даних ще нема"));else{var b=el("div","bars"),lb=el("div","bl");
+    d.forEach(function(x){var n=(x[1].published||[]).length,bar=el("div");bar.style.height=Math.max(4,n/mx*100)+"%";bar.appendChild(el("span","",String(n)));b.appendChild(bar);lb.appendChild(el("div","",x[0].slice(8)+"."+x[0].slice(5,7)))});a.appendChild(b);a.appendChild(lb)}
+  v.appendChild(a);
+  var t=el("div","card");t.style.marginTop="14px";t.appendChild(el("h2","","Сьогодні опубліковано"));
+  var td=(S.tg&&S.tg.daily||{})[today()],ps=td?td.published||[]:[];
+  if(!ps.length)t.appendChild(el("div","empty","Сьогодні ще нічого"));else{var u=el("ul","list");ps.slice().reverse().forEach(function(x){u.appendChild(el("li","",x))});t.appendChild(u)}
+  v.appendChild(t);
+  var pd=S.tg?Object.keys(S.tg.pending||{}).map(function(k){return S.tg.pending[k]}).filter(function(x){return x.status==="pending"}):[];
+  var q=el("div","card");q.style.marginTop="14px";q.appendChild(el("h2","","Чернетки"));
+  if(!pd.length)q.appendChild(el("div","empty","Чернеток нема. У режимі auto бот публікує сам."));else{var w=el("ul","list");pd.forEach(function(x){w.appendChild(el("li","",x.title))});q.appendChild(w)}
+  v.appendChild(q)}
+function viewRuns(v){v.appendChild(runsTable(S.runsTh,"Threads"));var s=el("div");s.style.height="14px";v.appendChild(s);v.appendChild(runsTable(S.runsTg,"Telegram"))}
+function viewIg(v){
+  var c=el("div","card");c.appendChild(el("h2","","Instagram · монтаж Reels"));
+  c.appendChild(el("div","sub","Розділ у розробці. Тут зʼявиться монтаж відео для Instagram."));
+  var u=el("ul","list");["Завантажити відео або обрати з бібліотеки","Автоматичні субтитри: шрифт, колір, анімація","Звукові ефекти, музика й гучність","Перегляд результату та експорт у Reels"].forEach(function(x){var li=el("li","dim",x);u.appendChild(li)});
+  c.appendChild(u);var r=el("div","row");r.appendChild(btn("Скоро","",function(){},true));c.appendChild(r);v.appendChild(c)}
+function viewSet(v){
+  var c=el("div","card");c.appendChild(el("h2","","Доступ до GitHub"));
+  c.appendChild(el("p","sub","Вставте токен GitHub (fine-grained) з доступом до репозиторіїв neirokhata і neirokhata-threads: Contents — Read, Actions — Read and write. Токен зберігається лише в цьому браузері й нікуди не надсилається, крім api.github.com."));
+  var i=el("input");i.type="password";i.id="tk";i.placeholder=tok()?"Токен збережено":"github_pat_…";i.autocomplete="off";c.appendChild(i);
+  var r=el("div","row");r.appendChild(btn("Зберегти й підключити","pri",function(){var v=$("tk").value.trim();if(!v)return;setTok(v);S.err=null;S.msg=null;S.tab="home";load()}));
+  if(tok())r.appendChild(btn("Забути токен","",function(){setTok("");S.tg=S.th=null;S.runsTg=S.runsTh=[];S.at=null;render()}));
+  c.appendChild(r);v.appendChild(c)}
+function render(){
+  var n=$("tabs");n.textContent="";TABS.forEach(function(t){var b=el("button","",t[1]);b.setAttribute("role","tab");b.setAttribute("aria-selected",String(S.tab===t[0]));b.addEventListener("click",function(){S.tab=t[0];S.msg=null;location.hash=t[0];render()});n.appendChild(b)});
+  $("upd").textContent=S.loading?"Оновлюю…":S.at?"Оновлено "+S.at.toLocaleTimeString("uk-UA",{hour:"2-digit",minute:"2-digit"}):"Не підключено";
+  var v=$("view");v.textContent="";
+  if(!tok()&&S.tab!=="set"&&S.tab!=="ig"){var c=el("div","card");c.appendChild(el("h2","","Підключіть GitHub"));c.appendChild(el("p","sub","Щоб бачити пости й запускати ботів, додайте токен у налаштуваннях."));c.appendChild(btn("Відкрити налаштування","pri",function(){S.tab="set";render()}));v.appendChild(c);return}
+  if(S.err&&S.tab!=="set"){var e=el("div","msg bad",S.err);e.style.marginBottom="14px";v.appendChild(e)}
+  ({home:viewHome,threads:viewThreads,tg:viewTg,runs:viewRuns,ig:viewIg,set:viewSet})[S.tab](v)}
+$("refresh").addEventListener("click",function(){S.err=null;load()});
+var h=location.hash.replace("#","");if(TABS.some(function(t){return t[0]===h}))S.tab=h;
+render();load();setInterval(function(){if(document.visibilityState==="visible"&&tok())load()},120000);
+})();
+</script>
+</body>
+</html>
