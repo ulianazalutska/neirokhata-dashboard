@@ -28,6 +28,8 @@ nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px soli
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .card{background:var(--card);border:1px solid var(--border);border-radius:6px 18px 6px 18px;padding:16px;box-shadow:0 18px 40px -30px rgba(239,27,3,.35)}
 .tile .n{font:700 30px/1.1 Onest,sans-serif;color:var(--acc2);letter-spacing:-.02em;line-height:1.1}
+.toprow{padding:10px 0;border-top:1px solid var(--line,#F2D5CD)}.toprow:first-of-type{border-top:0}
+.topst{font-size:13px;font-weight:600;color:var(--acc2)}.toptx{font-size:14px;margin-top:3px}
 .tile .l{color:var(--mute);font-size:13px;margin-top:4px}
 .two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:14px}
 .btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px 14px 6px 14px;padding:9px 14px;cursor:pointer}
@@ -134,20 +136,34 @@ function tgBtns(){var r=el("div","row");
   r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину й опублікує її в каналі: без паузи між постами і навіть якщо денний ліміт уже вичерпано.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true",force:"true"},"Telegram")})}));
   r.appendChild(btn("Перевірка без публікації","",function(){dispatch(TG_REPO,"autopost.yml",{dry_run:"true",ignore_gap:"true"},"Telegram (перевірка)")}));
   r.appendChild(btn("Надіслати звіт","",function(){dispatch(TG_REPO,"autopost.yml",{report:"true"},"Звіт")}));return r}
+function thTop(){
+  var c=el("div","card");c.appendChild(el("h2","","Популярні в Threads сьогодні"));
+  var t=today(),ps=((S.th&&S.th.published)||[]).filter(function(e){return e.at&&new Date(e.at).toLocaleDateString("sv-SE",{timeZone:"Europe/Kyiv"})===t});
+  if(!ps.length){c.appendChild(el("div","empty","Сьогодні в Threads ще нічого не виходило"));return c}
+  var hasStats=ps.some(function(e){return e.views!=null});
+  ps=ps.slice().sort(function(a,b){return(b.views||0)-(a.views||0)||(b.likes||0)-(a.likes||0)}).slice(0,5);
+  var kinds={announce:"анонс",prompts:"промпти",engage:"легкий"};
+  ps.forEach(function(e){var r=el("div","toprow");
+    var st=e.views!=null?("👁 "+e.views+" · ♥ "+(e.likes||0)+" · 💬 "+(e.replies||0)):"статистика ще збирається";
+    r.appendChild(el("div","topst",st+"  ·  "+(kinds[e.kind]||"пост")+" · "+fmt(e.at)));
+    r.appendChild(el("div","toptx",String(e.text||"").replace(/\s+/g," ").slice(0,140)));c.appendChild(r)});
+  if(!hasStats)c.appendChild(el("div","sub","Перегляди оновлюються, коли запускається бот Threads."));
+  return c}
 function viewHome(v){
   var g=el("div","grid"),sb=subs();
   g.appendChild(tile(String(pubToday()),"постів у Telegram сьогодні"));
   g.appendChild(tile(sb[0]==null?"—":String(sb[0]),"підписників каналу"+(sb[1]?" ("+(sb[1]>0?"+":"")+sb[1]+" за період)":"")));
   g.appendChild(tile(S.th?String(thToday()):"—","постів у Threads за сьогодні"));
   v.appendChild(g);
+  v.appendChild(thTop());
   var t=el("div","two");
-  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Пости йдуть за розкладом 9:17, 14:17 і 19:17 (cron-job.org)."));c1.appendChild(thBtns());t.appendChild(c1);
+  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","5 постів на день за Києвом: 09:00 анонс, 11:30 короткий анонс, 14:00 гілка з промптами, 17:00 анонс, 20:00 легкий пост."));c1.appendChild(thBtns());t.appendChild(c1);
   var c2=el("div","card");c2.appendChild(el("h2","","Telegram"));c2.appendChild(el("div","sub","Бот працює щоразу, коли спрацьовує розклад. Тут можна не чекати."));c2.appendChild(tgBtns());t.appendChild(c2);
   t.appendChild(runCard("Останній запуск Threads",S.runsTh));t.appendChild(runCard("Останній запуск Telegram",S.runsTg));
   v.appendChild(t);var m=msgBox();if(m)v.appendChild(m)}
 function viewThreads(v){
   var c=el("div","card");c.appendChild(el("h2","","Керування"));
-  c.appendChild(el("div","sub","Наступні пости за розкладом: 9:17, 14:17, 19:17 за Варшавою. Тизер пише ШІ, а під постом іде відповідь «Детальніше в тг»."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  c.appendChild(el("div","sub","5 постів на день за Києвом: 09:00 анонс, 11:30 короткий анонс, 14:00 гілка з промптами, 17:00 анонс, 20:00 легкий пост. Під анонсом іде відповідь із посиланням на Telegram."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
   var l=el("div","card");l.style.marginTop="14px";l.appendChild(el("h2","","Опубліковано"));
   var p=S.th&&S.th.published||[];
   if(S.th)l.appendChild(el("div","sub","Оброблено пости Telegram до №"+S.th.last_id));
