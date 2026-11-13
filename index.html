@@ -111,6 +111,7 @@ function tile(n,l){var c=el("div","card tile");c.appendChild(el("div","n",n));c.
 function btn(t,cls,fn,dis){var b=el("button","btn "+(cls||""),t);b.disabled=!!dis;b.addEventListener("click",fn);return b}
 function today(){return new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Kyiv"})}
 function daily(){var d=(S.tg&&S.tg.daily)||{};return Object.keys(d).sort().map(function(k){return[k,d[k]]})}
+function thToday(){var t=today();return((S.th&&S.th.published)||[]).filter(function(e){return e.at&&new Date(e.at).toLocaleDateString("sv-SE",{timeZone:"Europe/Kyiv"})===t}).length}
 function pubToday(){var d=(S.tg&&S.tg.daily||{})[today()];return d?(d.published||[]).length:0}
 function subs(){var s=(S.tg&&S.tg.subs)||{},k=Object.keys(s).sort();return k.length?[s[k[k.length-1]],k.length>1?s[k[k.length-1]]-s[k[0]]:0]:[null,0]}
 function lastRun(rs){return rs[0]}
@@ -127,8 +128,8 @@ function runsTable(rs,name){var c=el("div","card");c.appendChild(el("h2","",name
   w.appendChild(t);c.appendChild(w);return c}
 function msgBox(){if(!S.msg)return null;return el("div","msg "+(S.msg.ok?"ok":"bad"),S.msg.t)}
 function thBtns(){var r=el("div","row");
-  r.appendChild(btn("Опублікувати наступний зараз","pri",function(){ask("Опублікувати в Threads?","Бот візьме наступний пост із Telegram-каналу, перепише і опублікує на @neirokhata. Скасувати після запуску не вийде.",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"false"},"Threads")})}));
-  r.appendChild(btn("Показати тизери без публікації","",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"true"},"Threads (перевірка)")}));return r}
+  r.appendChild(btn("Опублікувати наступний зараз","pri",function(){ask("Опублікувати в Threads?","Бот візьме наступний пост із Telegram-каналу, перепише і опублікує на @neirokhata. Скасувати після запуску не вийде.",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"false",kind:"announce"},"Threads")})}));
+  r.appendChild(btn("Показати тизери без публікації","",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"true",kind:"announce"},"Threads (перевірка)")}));return r}
 function tgBtns(){var r=el("div","row");
   r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину й опублікує її в каналі: без паузи між постами і навіть якщо денний ліміт уже вичерпано.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true",force:"true"},"Telegram")})}));
   r.appendChild(btn("Перевірка без публікації","",function(){dispatch(TG_REPO,"autopost.yml",{dry_run:"true",ignore_gap:"true"},"Telegram (перевірка)")}));
@@ -137,8 +138,7 @@ function viewHome(v){
   var g=el("div","grid"),sb=subs();
   g.appendChild(tile(String(pubToday()),"постів у Telegram сьогодні"));
   g.appendChild(tile(sb[0]==null?"—":String(sb[0]),"підписників каналу"+(sb[1]?" ("+(sb[1]>0?"+":"")+sb[1]+" за період)":"")));
-  g.appendChild(tile(S.th?String((S.th.published||[]).length):"—","постів у Threads"));
-  g.appendChild(tile(S.tg?String(Object.keys(S.tg.pending||{}).filter(function(k){return S.tg.pending[k].status==="pending"}).length):"—","чернеток чекає"));
+  g.appendChild(tile(S.th?String(thToday()):"—","постів у Threads за сьогодні"));
   v.appendChild(g);
   var t=el("div","two");
   var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Пости йдуть за розкладом 9:17, 14:17 і 19:17 (cron-job.org)."));c1.appendChild(thBtns());t.appendChild(c1);
