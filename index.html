@@ -130,7 +130,7 @@ function thBtns(){var r=el("div","row");
   r.appendChild(btn("Опублікувати наступний зараз","pri",function(){ask("Опублікувати в Threads?","Бот візьме наступний пост із Telegram-каналу, перепише і опублікує на @neirokhata. Скасувати після запуску не вийде.",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"false"},"Threads")})}));
   r.appendChild(btn("Показати тизери без публікації","",function(){dispatch(TH_REPO,"threads.yml",{dry_run:"true"},"Threads (перевірка)")}));return r}
 function tgBtns(){var r=el("div","row");
-  r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину, ігноруючи паузу між постами, і опублікує її в каналі.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true"},"Telegram")})}));
+  r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину й опублікує її в каналі: без паузи між постами і навіть якщо денний ліміт уже вичерпано.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true",force:"true"},"Telegram")})}));
   r.appendChild(btn("Перевірка без публікації","",function(){dispatch(TG_REPO,"autopost.yml",{dry_run:"true",ignore_gap:"true"},"Telegram (перевірка)")}));
   r.appendChild(btn("Надіслати звіт","",function(){dispatch(TG_REPO,"autopost.yml",{report:"true"},"Звіт")}));return r}
 function viewHome(v){
