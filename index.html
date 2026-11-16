@@ -28,6 +28,9 @@ nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px soli
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .card{background:var(--card);border:1px solid var(--border);border-radius:6px 18px 6px 18px;padding:16px;box-shadow:0 18px 40px -30px rgba(239,27,3,.35)}
 .tile .n{font:700 30px/1.1 Onest,sans-serif;color:var(--acc2);letter-spacing:-.02em;line-height:1.1}
+.drrow{display:flex;gap:16px;padding:14px 0;border-top:1px solid var(--line,#F2D5CD);flex-wrap:wrap}.drrow:first-of-type{border-top:0}
+.drimg{width:180px;max-width:100%;border-radius:6px 22px 6px 22px;object-fit:cover;align-self:flex-start}
+.drbody{flex:1;min-width:240px}.drt{font:700 17px Onest,sans-serif}.drl{font-size:12px;font-weight:600;color:var(--mute);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}.drx{white-space:pre-wrap;font-size:14.5px}
 .toprow{padding:10px 0;border-top:1px solid var(--line,#F2D5CD)}.toprow:first-of-type{border-top:0}
 .topst{font-size:13px;font-weight:600;color:var(--acc2)}.toptx{font-size:14px;margin-top:3px}
 .tile .l{color:var(--mute);font-size:13px;margin-top:4px}
@@ -136,6 +139,26 @@ function tgBtns(){var r=el("div","row");
   r.appendChild(btn("Новий пост зараз","pri",function(){ask("Опублікувати в Telegram зараз?","Бот одразу підбере найкращу новину й опублікує її в каналі: без паузи між постами і навіть якщо денний ліміт уже вичерпано.",function(){dispatch(TG_REPO,"autopost.yml",{ignore_gap:"true",force:"true"},"Telegram")})}));
   r.appendChild(btn("Перевірка без публікації","",function(){dispatch(TG_REPO,"autopost.yml",{dry_run:"true",ignore_gap:"true"},"Telegram (перевірка)")}));
   r.appendChild(btn("Надіслати звіт","",function(){dispatch(TG_REPO,"autopost.yml",{report:"true"},"Звіт")}));return r}
+function hiddenDr(){try{return JSON.parse(localStorage.getItem("nh_dr_done")||"[]")}catch(e){return[]}}
+function hideDr(id){try{var a=hiddenDr();a.push(id);localStorage.setItem("nh_dr_done",JSON.stringify(a.slice(-100)))}catch(e){}}
+function copyTxt(t,b){var done=function(){var o=b.textContent;b.textContent="Скопійовано ✓";setTimeout(function(){b.textContent=o},1500)};
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,function(){prompt("Скопіюй:",t)});else prompt("Скопіюй:",t)}
+function thDrafts(compact){
+  var h=hiddenDr(),ds=((S.th&&S.th.drafts)||[]).filter(function(x){return h.indexOf(x.src_id)<0}).reverse();
+  if(!ds.length){if(compact)return null;var e=el("div","card");e.style.marginTop="14px";e.appendChild(el("h2","","Чернетки: промпт з картинкою"));e.appendChild(el("div","empty","Нових чернеток немає. Наступна зʼявиться о 14:00 у «день картинки»."));return e}
+  var c=el("div","card");c.style.marginTop="14px";c.appendChild(el("h2","","Чернетки: промпт з картинкою ("+ds.length+")"));
+  c.appendChild(el("div","sub","Спробуй промпт, згенеруй свою картинку й опублікуй у Threads сама: перший пост — гачок + твоя картинка, у відповідях — промпт і заклик."));
+  (compact?ds.slice(0,1):ds).forEach(function(x){var r=el("div","drrow");
+    if(x.image){var im=document.createElement("img");im.src=x.image;im.alt="приклад з джерела";im.className="drimg";im.referrerPolicy="no-referrer";r.appendChild(im)}
+    var b=el("div","drbody");b.appendChild(el("div","drt",x.title||"Промпт"));
+    [["Гачок",x.hook],["Промпт",x.prompt],["Заклик",x.cta]].forEach(function(p){b.appendChild(el("div","drl",p[0]));b.appendChild(el("div","drx",p[1]||""))});
+    var row=el("div","row");
+    var b1=btn("Копіювати все","pri",function(){copyTxt((x.hook||"")+"\n\n"+(x.prompt||"")+"\n\n"+(x.cta||""),b1)});row.appendChild(b1);
+    var b2=btn("Копіювати промпт","",function(){copyTxt(x.prompt||"",b2)});row.appendChild(b2);
+    row.appendChild(btn("Готово, сховати","",function(){hideDr(x.src_id);render()}));
+    b.appendChild(row);r.appendChild(b);c.appendChild(r)});
+  if(compact&&ds.length>1)c.appendChild(el("div","sub","Ще "+(ds.length-1)+" — у вкладці Threads."));
+  return c}
 function thTop(){
   var c=el("div","card");c.appendChild(el("h2","","Популярні в Threads сьогодні"));
   var t=today(),ps=((S.th&&S.th.published)||[]).filter(function(e){return e.at&&new Date(e.at).toLocaleDateString("sv-SE",{timeZone:"Europe/Kyiv"})===t});
@@ -156,14 +179,16 @@ function viewHome(v){
   g.appendChild(tile(S.th?String(thToday()):"—","постів у Threads за сьогодні"));
   v.appendChild(g);
   v.appendChild(thTop());
+  var drh=thDrafts(true);if(drh)v.appendChild(drh);
   var t=el("div","two");
-  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","5 постів на день за Києвом: 09:00 анонс, 11:30 короткий анонс, 14:00 гілка з промптами, 17:00 анонс, 20:00 легкий пост."));c1.appendChild(thBtns());t.appendChild(c1);
+  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30 і 17:00 — короткі анонси текстом; 14:00 — через день гілка з промптами або чернетка «промпт з картинкою» (зʼявляється нижче, публікуєш сама); 20:00 — легкий пост."));c1.appendChild(thBtns());t.appendChild(c1);
   var c2=el("div","card");c2.appendChild(el("h2","","Telegram"));c2.appendChild(el("div","sub","Бот працює щоразу, коли спрацьовує розклад. Тут можна не чекати."));c2.appendChild(tgBtns());t.appendChild(c2);
   t.appendChild(runCard("Останній запуск Threads",S.runsTh));t.appendChild(runCard("Останній запуск Telegram",S.runsTg));
   v.appendChild(t);var m=msgBox();if(m)v.appendChild(m)}
 function viewThreads(v){
   var c=el("div","card");c.appendChild(el("h2","","Керування"));
-  c.appendChild(el("div","sub","5 постів на день за Києвом: 09:00 анонс, 11:30 короткий анонс, 14:00 гілка з промптами, 17:00 анонс, 20:00 легкий пост. Під анонсом іде відповідь із посиланням на Telegram."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  c.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30 і 17:00 — короткі анонси текстом; 14:00 — через день гілка з промптами або чернетка «промпт з картинкою» (зʼявляється нижче, публікуєш сама); 20:00 — легкий пост. Під анонсом іде відповідь «Детальніше в тг»."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  var dr=thDrafts(false);if(dr)v.appendChild(dr);
   var l=el("div","card");l.style.marginTop="14px";l.appendChild(el("h2","","Опубліковано"));
   var p=S.th&&S.th.published||[];
   if(S.th)l.appendChild(el("div","sub","Оброблено пости Telegram до №"+S.th.last_id));
