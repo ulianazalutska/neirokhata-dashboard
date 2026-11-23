@@ -143,7 +143,7 @@ function hiddenDr(){try{return JSON.parse(localStorage.getItem("nh_dr_done")||"[
 function hideDr(id){try{var a=hiddenDr();a.push(id);localStorage.setItem("nh_dr_done",JSON.stringify(a.slice(-100)))}catch(e){}}
 function copyTxt(t,b){var done=function(){var o=b.textContent;b.textContent="Скопійовано ✓";setTimeout(function(){b.textContent=o},1500)};
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,function(){prompt("Скопіюй:",t)});else prompt("Скопіюй:",t)}
-function thDrafts(compact){
+function thDrafts(compact){return null;
   var h=hiddenDr(),ds=((S.th&&S.th.drafts)||[]).filter(function(x){return h.indexOf(x.src_id)<0&&!x.tg_msg&&!x.expired}).reverse();
   if(!ds.length){if(compact)return null;var e=el("div","card");e.style.marginTop="14px";e.appendChild(el("h2","","Чернетки: промпт з картинкою"));e.appendChild(el("div","empty","Нових чернеток немає. Наступна зʼявиться о 14:00 у «день картинки»."));return e}
   var c=el("div","card");c.style.marginTop="14px";c.appendChild(el("h2","","Чернетки: промпт з картинкою ("+ds.length+")"));
@@ -181,13 +181,13 @@ function viewHome(v){
   v.appendChild(thTop());
   var drh=thDrafts(true);if(drh)v.appendChild(drh);
   var t=el("div","two");
-  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30 і 17:00 — короткі анонси текстом; 14:00 — через день гілка з промптами або чернетка «промпт з картинкою» (зʼявляється нижче, публікуєш сама); 20:00 — легкий пост."));c1.appendChild(thBtns());t.appendChild(c1);
+  var c1=el("div","card");c1.appendChild(el("h2","","Threads"));c1.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30, 14:00, 17:00 і 20:00 — 5 коротких анонсів текстом."));c1.appendChild(thBtns());t.appendChild(c1);
   var c2=el("div","card");c2.appendChild(el("h2","","Telegram"));c2.appendChild(el("div","sub","Бот працює щоразу, коли спрацьовує розклад. Тут можна не чекати."));c2.appendChild(tgBtns());t.appendChild(c2);
   t.appendChild(runCard("Останній запуск Threads",S.runsTh));t.appendChild(runCard("Останній запуск Telegram",S.runsTg));
   v.appendChild(t);var m=msgBox();if(m)v.appendChild(m)}
 function viewThreads(v){
   var c=el("div","card");c.appendChild(el("h2","","Керування"));
-  c.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30 і 17:00 — короткі анонси текстом; 14:00 — через день гілка з промптами або чернетка «промпт з картинкою» (зʼявляється нижче, публікуєш сама); 20:00 — легкий пост. Під анонсом іде відповідь «Детальніше в тг»."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
+  c.appendChild(el("div","sub","Щодня за Києвом: 09:00, 11:30, 14:00, 17:00 і 20:00 — 5 коротких анонсів текстом. Під анонсом іде відповідь «Детальніше в тг»."));c.appendChild(thBtns());var m=msgBox();if(m)c.appendChild(m);v.appendChild(c);
   var dr=thDrafts(false);if(dr)v.appendChild(dr);
   var l=el("div","card");l.style.marginTop="14px";l.appendChild(el("h2","","Опубліковано"));
   var p=S.th&&S.th.published||[];
